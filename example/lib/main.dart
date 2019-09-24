@@ -33,6 +33,7 @@ class _KeyboardVisibilityExampleState extends State<KeyboardVisibilityExample> {
   KeyboardVisibilityNotification _keyboardVisibility = new KeyboardVisibilityNotification();
   int _keyboardVisibilitySubscriberId;
   bool _keyboardState;
+  double _height;
 
   @protected
   void initState() {
@@ -41,9 +42,10 @@ class _KeyboardVisibilityExampleState extends State<KeyboardVisibilityExample> {
     _keyboardState = _keyboardVisibility.isKeyboardVisible;
 
     _keyboardVisibilitySubscriberId = _keyboardVisibility.addNewListener(
-      onChange: (bool visible) {
+      onChange: (bool visible, double height) {
         setState(() {
           _keyboardState = visible;
+          _height = height;
         });
       },
     );
@@ -52,6 +54,7 @@ class _KeyboardVisibilityExampleState extends State<KeyboardVisibilityExample> {
   @override
   void dispose() {
     _keyboardVisibility.removeListener(_keyboardVisibilitySubscriberId);
+    super.dispose();
   }
 
   @override
@@ -74,7 +77,7 @@ class _KeyboardVisibilityExampleState extends State<KeyboardVisibilityExample> {
               ),
               Container(height: 60.0),
               Text(
-                'The current state of the keyboard is: ' + (_keyboardState ? 'VISIBLE' : 'NOT VISIBLE'),
+                'The current state of the keyboard is: ${_keyboardState ? 'VISIBLE' : 'NOT VISIBLE'} and height is: $_height'
               ),
             ],
           )

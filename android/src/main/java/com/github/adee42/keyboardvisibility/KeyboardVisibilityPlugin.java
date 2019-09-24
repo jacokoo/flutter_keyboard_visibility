@@ -10,6 +10,9 @@ import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.PluginRegistry;
 import io.flutter.plugin.common.PluginRegistry.Registrar;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import android.app.Activity;
 import android.app.Application;
 import android.content.Intent;
@@ -47,7 +50,12 @@ public class KeyboardVisibilityPlugin implements StreamHandler, Application.Acti
 			if (newState != isVisible) {
 				isVisible = newState;
 				if (eventsSink != null) {
-					eventsSink.success(isVisible ? 1 : 0);
+                    Map<String, Integer> map = new HashMap<>();
+                    map.put("visible", isVisible ? 1 : 0);
+                    if (isVisible) {
+                        map.put("height", mainView.getRootView().getHeight() - r.height());
+                    }
+					eventsSink.success(map);
 				}
 			}
 		}

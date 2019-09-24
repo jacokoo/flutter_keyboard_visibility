@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/services.dart';
 import 'dart:async';
 
@@ -6,10 +8,10 @@ class KeyboardVisibilitySubscriber {
   /// Called when a keyboard visibility event occurs
   /// Is only called when the state changes
   /// The [visible] parameter reflects the new visibility
-  final Function(bool visible) onChange;
+  final Function(bool visible, double height) onChange;
 
   /// Called when the keyboard appears
-  final Function onShow;
+  final Function(double height) onShow;
 
   /// Called when the keyboard closes
   final Function onHide;
@@ -29,6 +31,7 @@ class KeyboardVisibilityNotification {
 
   /// The current state of the keyboard visibility. Can be used without subscribing
   bool isKeyboardVisible = false;
+  double height = 0.0;
 
   /// Constructs a new [KeyboardVisibilityNotification]
   KeyboardVisibilityNotification() {
@@ -39,16 +42,28 @@ class KeyboardVisibilityNotification {
 
   /// Internal function to handle native code channel communication
   void onKeyboardEvent(dynamic arg) {
-    isKeyboardVisible = (arg as int) == 1;
+    height = 0.0;
+    if (arg.runtimeType == int) { // ios
+      isKeyboardVisible = arg == 1;
+      if (isKeyboardVisible) {
+        height = window.viewInsets.bottom;
+      }
+    } else {                      // android
+      isKeyboardVisible = arg['visible'] == 1;
+      if (isKeyboardVisible) {
+        height = (arg['height'] as int).toDouble();
+      }
+    }
+    height /= window.devicePixelRatio;
 
     // send a message to all subscribers notifying them about the new state
     _list.forEach((subscriber, s) {
       try {
         if (s.onChange != null) {
-          s.onChange(isKeyboardVisible);
+          s.onChange(isKeyboardVisible, height);
         }
         if ((s.onShow != null) && isKeyboardVisible) {
-          s.onShow();
+          s.onShow(height);
         }
         if ((s.onHide != null) && !isKeyboardVisible) {
           s.onHide();
@@ -63,7 +78,7 @@ class KeyboardVisibilityNotification {
   /// [onHide] is called when the keyboard disappears
   /// Returns a subscribing id that can be used to unsubscribe
   int addNewListener(
-      {Function(bool) onChange, Function onShow, Function onHide}) {
+      {Function(bool, double) onChange, Function onShow, Function onHide}) {
     _list[_currentIndex] = KeyboardVisibilitySubscriber(
         onChange: onChange, onShow: onShow, onHide: onHide);
     return _currentIndex++;
