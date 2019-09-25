@@ -17,6 +17,7 @@ import android.app.Activity;
 import android.app.Application;
 import android.content.Intent;
 import android.graphics.Rect;
+import android.graphics.Point;
 import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
@@ -29,6 +30,7 @@ public class KeyboardVisibilityPlugin implements StreamHandler, Application.Acti
     EventSink eventsSink;
     Registrar registrar;
     boolean isVisible;
+    Point screenSize = new Point();
 
 
     KeyboardVisibilityPlugin(Registrar registrar) {
@@ -53,7 +55,7 @@ public class KeyboardVisibilityPlugin implements StreamHandler, Application.Acti
                     Map<String, Integer> map = new HashMap<>();
                     map.put("visible", isVisible ? 1 : 0);
                     if (isVisible) {
-                        map.put("height", mainView.getRootView().getHeight() - r.height());
+                        map.put("height", screenSize.y - r.bottom);
                     }
 					eventsSink.success(map);
 				}
@@ -68,6 +70,7 @@ public class KeyboardVisibilityPlugin implements StreamHandler, Application.Acti
     @Override
     public void onActivityStarted(Activity activity) {
         try {
+            activity.getWindowManager().getDefaultDisplay().getSize(screenSize);
             mainView = ((ViewGroup)activity.findViewById(android.R.id.content)).getChildAt(0);
             mainView.getViewTreeObserver().addOnGlobalLayoutListener(this);
         }

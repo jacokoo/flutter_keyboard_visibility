@@ -2,6 +2,8 @@
 
 Notification service for soft-keyboard visibility
 
+If you find flutter can not detect keyboard, check `AndroidManifest.xml`, make sure the value of `android:windowSoftInputMode` is `adjustResize`
+
 # Usage
 
 Add the dependency to your pubspec.yaml file in the root folder of your project.
@@ -33,7 +35,7 @@ void initState() {
   super.initState();
 
   KeyboardVisibilityNotification().addNewListener(
-    onChange: (bool visible) {
+    onChange: (bool visible, double height) {
       print(visible);
     },
   );
